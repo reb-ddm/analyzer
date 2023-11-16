@@ -1,0 +1,112 @@
+\documentclass[english,xcolor=table]{i20lecture}
+\usepackage{url}
+\usepackage{tikz}
+\usetikzlibrary{calc, shapes, backgrounds}
+\usepackage{amsmath, amssymb}
+\usetikzlibrary{arrows.meta}
+\usepackage{outlines}
+%\usepackage{filecontents}
+\usepackage{graphicx}
+\usepackage{color, colortbl}
+\definecolor{LBlue}{rgb}{.8,.8,1}
+\definecolor{MBlue}{rgb}{.6,.6,1}
+\definecolor{HBlue}{rgb}{.1,.1,1}
+\definecolor{TUMBlue}{HTML}{0065BD}
+\definecolor{TUMSecondaryBlue}{HTML}{005293}
+\definecolor{TUMSecondaryBlue2}{HTML}{003359}
+\definecolor{TUMBlack}{HTML}{000000}
+\definecolor{TUMWhite}{HTML}{FFFFFF}
+\definecolor{TUMDarkGray}{HTML}{333333}
+\definecolor{TUMGray}{HTML}{808080}
+\definecolor{TUMLightGray}{HTML}{CCCCC6}
+\definecolor{TUMAccentGray}{HTML}{DAD7CB}
+\definecolor{TUMAccentOrange}{HTML}{E37222}
+\definecolor{TUMAccentGreen}{HTML}{A2AD00}
+\definecolor{TUMAccentLightBlue}{HTML}{98C6EA}
+\definecolor{TUMAccentBlue}{HTML}{64A0C8}
+\def\checkmark{\tikz\fill[scale=0.4](0,.35) -- (.25,0) -- (1,.7) -- (.25,.15) -- cycle;} 
+\usepackage{xpatch}
+\usepackage{adjustbox}
+\usepackage[style=numeric,backend=biber]{biblatex}
+\usepackage{csquotes}
+\usepackage{caption}
+\usepackage{minted}
+\usepackage{tabularx}
+\usepackage{cancel}
+\usepackage{xpatch,letltxmacro}
+\LetLtxMacro{\cminted}{\minted}
+\let\endcminted\endminted
+\xpretocmd{\cminted}{\RecustomVerbatimEnvironment{Verbatim}{BVerbatim}{}}{}{}
+
+\subtitle{Relational Domains}
+\addbibresource{lit.bib}
+%\bibliographystyle{plain}
+%\bibliography{\jobname}
+\setbeamertemplate{caption}[numbered]
+\setbeamerfont{caption}{size=\scriptsize}
+\captionsetup[figure]{name={Fig.},}
+\newcommand{\btVFill}{\vskip0pt plus 1filll}
+%\setbeamercovered{invisible}
+
+\begin{document}\selectlanguage{english}
+
+\frame{\titlepage}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}
+%	\frametitle{Outline}
+%	\begin{itemize}
+%		\item Motivation
+%		\item General Subtyping
+%		\item Covariance
+%		\item Contravariance
+%		\item Invariance
+%		\item Declaration-Site Variance
+%		\item Use-Site Variance
+%		\item Mixed-Site Variance
+%		\item Java vs Kotlin
+%	\end{itemize}
+%\end{frame}
+
+\begin{frame}
+	\frametitle{Progress}
+		\begin{itemize}
+			\item Datatype for Abstract Domain\\-> (int * Mpqf.t) Array.t option
+			\item Make a first test case
+			\item First draft for meet and join
+		\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Next Steps}
+	\begin{itemize}
+		\item Translate our ideas to code
+		\item Adapt the remaining functions to our use case
+		\item Improve our test suite
+		\item Identify work and split it up
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Questions}
+	\begin{itemize}
+		\item Is the offset an integer or should we use Mpqf?
+		\item Is there documentation for the functions defined in affineEqualityDomain?
+		\item Arrays do not have a hash -> should we implement our own hash function? Is it possible
+	\end{itemize}
+\end{frame}
+
+%\begin{frame}
+%	\frametitle{Work Distribution}
+%	\begin{itemize}
+%		\item Rebecca -> Datastructure
+%		\item Nicolai -> Meet and Join
+%		\item Jennie -> Testing
+%		\item Gabriel -> 
+%		\item Alina -> Slides (more in future)
+%	\end{itemize}
+%\end{frame}
+%	
+
+\end{document}
