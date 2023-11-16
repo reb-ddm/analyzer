@@ -1,0 +1,6 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{l+m}{1} \PYG{k+kd}{class} \PYG{n+nc}{MyClass} \PYG{o}{\PYGZlt{}}\PYG{n}{X}\PYG{o}{\PYGZgt{}} \PYG{p}{\PYGZob{}}
+\PYG{l+m}{2}   \PYG{k+kd}{var} \PYG{n+nv}{myAttribute} \PYG{p}{:} \PYG{n}{X}
+\PYG{l+m}{3}   \PYG{k+kd}{fun} \PYG{n+nf}{myFun}\PYG{p}{(}\PYG{n}{input} \PYG{p}{:} \PYG{n}{X}\PYG{p}{)} \PYG{p}{:} \PYG{n}{X}
+\PYG{l+m}{4} \PYG{p}{\PYGZcb{}}
+\end{Verbatim}

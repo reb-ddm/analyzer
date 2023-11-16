@@ -1,0 +1,5 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{l+m}{1} \PYG{k+kd}{class} \PYG{n+nc}{Number} \PYG{p}{\PYGZob{}\PYGZcb{}}
+\PYG{l+m}{2} \PYG{k+kd}{class} \PYG{n+nc}{Double} \PYG{p}{:} \PYG{n}{Number} \PYG{p}{\PYGZob{}\PYGZcb{}} \PYG{c+c1}{// Double is child of Number}
+\PYG{l+m}{3} \PYG{k+kd}{class} \PYG{n+nc}{Integer} \PYG{p}{:} \PYG{n}{Number} \PYG{p}{\PYGZob{}\PYGZcb{}} \PYG{c+c1}{// Integer is child of Number}
+\end{Verbatim}

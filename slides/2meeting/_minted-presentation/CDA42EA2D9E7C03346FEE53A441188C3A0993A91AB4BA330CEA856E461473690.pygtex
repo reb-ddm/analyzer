@@ -1,0 +1,7 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{l+m}{1}  \PYG{k+kd}{open} \PYG{k+kd}{class} \PYG{n+nc}{MyVector}\PYG{o}{\PYGZlt{}}\PYG{n}{T}\PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{k+kd}{var} \PYG{n+nv}{array}\PYG{p}{:} \PYG{n}{MutableList}\PYG{o}{\PYGZlt{}}\PYG{n}{T}\PYG{o}{\PYGZgt{}} \PYG{p}{)} \PYG{p}{\PYGZob{}}
+\PYG{l+m}{2}    \PYG{k+kd}{fun} \PYG{n+nf}{transposed}\PYG{p}{()} \PYG{p}{:} \PYG{n}{MutableList}\PYG{o}{\PYGZlt{}}\PYG{n}{MutableList}\PYG{o}{\PYGZlt{}}\PYG{n}{T}\PYG{o}{\PYGZgt{}\PYGZgt{}} \PYG{p}{\PYGZob{}}
+\PYG{l+m}{3}      \PYG{k}{return} \PYG{n}{MutableList}\PYG{p}{(}\PYG{l+m}{1}\PYG{p}{)\PYGZob{}}\PYG{n}{i} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{array}\PYG{p}{.}\PYG{n+na}{subList}\PYG{p}{(}\PYG{n}{i}\PYG{p}{,}\PYG{n}{i}\PYG{o}{+}\PYG{l+m}{1}\PYG{p}{)\PYGZcb{}}
+\PYG{l+m}{4}    \PYG{p}{\PYGZcb{}}
+\PYG{l+m}{5}  \PYG{p}{\PYGZcb{}}
+\end{Verbatim}

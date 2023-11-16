@@ -1,0 +1,7 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{l+m+mi}{1} \PYG{n}{List}\PYG{o}{\PYGZlt{}}\PYG{n}{Number}\PYG{o}{\PYGZgt{}} \PYG{n}{myList}  \PYG{o}{=} \PYG{k}{new} \PYG{n}{List}\PYG{p}{();}
+\PYG{l+m+mi}{2} \PYG{n}{List}\PYG{o}{\PYGZlt{}?} \PYG{k+kd}{extends} \PYG{n}{Number}\PYG{o}{\PYGZgt{}} \PYG{n}{readMe} \PYG{o}{=} \PYG{n}{myList}\PYG{p}{;}
+\PYG{l+m+mi}{3} \PYG{n}{List}\PYG{o}{\PYGZlt{}?} \PYG{k+kd}{super} \PYG{n}{Number}\PYG{o}{\PYGZgt{}} \PYG{n}{writeMe} \PYG{o}{=} \PYG{n}{myList}\PYG{p}{;}
+\PYG{l+m+mi}{4} \PYG{n}{Number} \PYG{n}{x} \PYG{o}{=} \PYG{n}{readMe}\PYG{p}{.}\PYG{n+na}{get}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{);}
+\PYG{l+m+mi}{5} \PYG{n}{writeMe}\PYG{p}{.}\PYG{n+na}{add}\PYG{p}{(}\PYG{n}{x}\PYG{p}{);}
+\end{Verbatim}

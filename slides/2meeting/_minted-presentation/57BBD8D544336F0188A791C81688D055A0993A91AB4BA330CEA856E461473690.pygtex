@@ -1,0 +1,6 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{l+m}{1} \PYG{k+kd}{fun} \PYG{n+nf}{foo1} \PYG{p}{()} \PYG{p}{:} \PYG{n}{Number}	\PYG{o}{=} \PYG{n}{TODO}\PYG{p}{()} \PYG{c+c1}{// Type: () \PYGZhy{}\PYGZgt{} Number}
+\PYG{l+m}{2} \PYG{k+kd}{fun} \PYG{n+nf}{foo2} \PYG{p}{()} \PYG{p}{:} \PYG{n}{Integer}	\PYG{o}{=} \PYG{n}{TODO}\PYG{p}{()} \PYG{c+c1}{// Type: () \PYGZhy{}\PYGZgt{} Integer}
+\PYG{l+m}{3} \PYG{k+kd}{fun} \PYG{n+nf}{bar1} \PYG{p}{(}\PYG{n}{Number}\PYG{p}{)} \PYG{p}{:} \PYG{k+kt}{Unit}	\PYG{o}{=} \PYG{n}{TODO}\PYG{p}{()} \PYG{c+c1}{// Type: (Number) \PYGZhy{}\PYGZgt{} Unit}
+\PYG{l+m}{4} \PYG{k+kd}{fun} \PYG{n+nf}{bar2} \PYG{p}{(}\PYG{n}{Integer}\PYG{p}{)} \PYG{p}{:} \PYG{k+kt}{Unit}	\PYG{o}{=} \PYG{n}{TODO}\PYG{p}{()} \PYG{c+c1}{// Type: (Integer) \PYGZhy{}\PYGZgt{} Unit}
+\end{Verbatim}

@@ -1,0 +1,52 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.1 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global}
+    \entry{mixedSite}{manual}{}
+      \name{author}{1}{}{%
+        {{hash=5ac3d6fd539f32d078901b320866e937}{%
+           family={Tate},
+           familyi={T\bibinitperiod},
+           given={Ross},
+           giveni={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{5ac3d6fd539f32d078901b320866e937}
+      \strng{fullhash}{5ac3d6fd539f32d078901b320866e937}
+      \strng{bibnamehash}{5ac3d6fd539f32d078901b320866e937}
+      \strng{authorbibnamehash}{5ac3d6fd539f32d078901b320866e937}
+      \strng{authornamehash}{5ac3d6fd539f32d078901b320866e937}
+      \strng{authorfullhash}{5ac3d6fd539f32d078901b320866e937}
+      \field{sortinit}{T}
+      \field{sortinithash}{51f9faf24c60c62ca764a77f78cf5666}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Mixed-Site Variance}
+      \field{year}{In FOOL 2013}
+      \verb{urlraw}
+      \verb https://rosstate.org/publications/mixedsite/mixedsite-tate-fool13.pdf
+      \endverb
+      \verb{url}
+      \verb https://rosstate.org/publications/mixedsite/mixedsite-tate-fool13.pdf
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

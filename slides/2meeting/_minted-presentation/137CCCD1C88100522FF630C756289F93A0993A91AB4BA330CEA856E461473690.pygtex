@@ -1,0 +1,10 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+	\PYG{p}{...}
+\PYG{l+m}{6}  \PYG{k+kd}{var} \PYG{n+nv}{list} \PYG{p}{:} \PYG{n}{MutableList}\PYG{o}{\PYGZlt{}}\PYG{n}{Number}\PYG{o}{\PYGZgt{}} \PYG{o}{=} \PYG{n}{MutableList}\PYG{p}{(}\PYG{l+m}{5}\PYG{p}{)\PYGZob{}} \PYG{n}{i} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{i}\PYG{p}{\PYGZcb{}}
+\PYG{l+m}{7}  \PYG{k+kd}{var} \PYG{n+nv}{vector}  \PYG{p}{:} \PYG{n}{MyVector}\PYG{o}{\PYGZlt{}}\PYG{n}{Number}\PYG{o}{\PYGZgt{}} \PYG{o}{=} \PYG{n}{MyVector}\PYG{p}{(}\PYG{n}{list}\PYG{p}{)}
+\PYG{l+m}{8}  \PYG{k+kd}{var} \PYG{n+nv}{transposed}  \PYG{o}{=} \PYG{n}{vector}\PYG{p}{.}\PYG{n+na}{transposed}\PYG{p}{()} \PYG{c+c1}{// MutableList\PYGZlt{}MutableList\PYGZlt{}Number\PYGZgt{}\PYGZgt{}}
+\PYG{l+m}{9}  \PYG{k+kd}{var} \PYG{n+nv}{vector1} \PYG{p}{:} \PYG{n}{MyVector}\PYG{o}{\PYGZlt{}}\PYG{k}{out} \PYG{n}{Number}\PYG{o}{\PYGZgt{}} \PYG{o}{=} \PYG{n}{vector}
+\PYG{l+m}{10}  \PYG{k+kd}{var} \PYG{n+nv}{transposed1} \PYG{o}{=} \PYG{n}{vector1}\PYG{p}{.}\PYG{n+na}{transposed}\PYG{p}{()} \PYG{c+c1}{// MutableList\PYGZlt{}out MutableList\PYGZlt{}out Number\PYGZgt{}\PYGZgt{}}
+\PYG{l+m}{11}  \PYG{k+kd}{var} \PYG{n+nv}{vector2} \PYG{p}{:} \PYG{n}{MyVector}\PYG{o}{\PYGZlt{}}\PYG{k}{in} \PYG{n}{Number}\PYG{o}{\PYGZgt{}} \PYG{o}{=} \PYG{n}{vector}
+\PYG{l+m}{12} \PYG{k+kd}{var} \PYG{n+nv}{transposed2} \PYG{o}{=} \PYG{n}{vector2}\PYG{p}{.}\PYG{n+na}{transposed}\PYG{p}{()} \PYG{c+c1}{// MutableList\PYGZlt{} out MutableList\PYGZlt{}in Number\PYGZgt{}\PYGZgt{}}
+\end{Verbatim}

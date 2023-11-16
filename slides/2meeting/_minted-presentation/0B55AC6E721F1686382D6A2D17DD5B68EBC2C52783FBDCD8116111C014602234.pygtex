@@ -1,0 +1,5 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{l+m+mi}{1} \PYG{c+c1}{//Java}
+\PYG{l+m+mi}{2} \PYG{n}{Number}\PYG{o}{[]} \PYG{n}{numbers} \PYG{o}{=} \PYG{k}{new} \PYG{n}{Integer}\PYG{o}{[}\PYG{l+m+mi}{5}\PYG{o}{]}\PYG{p}{;}
+\PYG{l+m+mi}{3} \PYG{n}{numbers}\PYG{o}{[}\PYG{l+m+mi}{0}\PYG{o}{]} \PYG{o}{=} \PYG{k}{new} \PYG{n}{Double}\PYG{p}{(}\PYG{l+m+mf}{0.5}\PYG{p}{);}
+\end{Verbatim}

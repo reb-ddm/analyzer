@@ -1,0 +1,117 @@
+@book{wilhelm2013compiler,
+  title={Compiler Design: Syntactic and Semantic Analysis},
+  author={Wilhelm, R. and Seidl, H. and Hack, S.},
+  isbn={9783642175404},
+  year={2013},
+  publisher={Springer Berlin Heidelberg}
+}
+@manual{kotlinTypes,
+  title={Kotlin language specification},
+  author={Marat Akhin, Mikhail Belyaev},
+  date={accessed 11/06/2023},
+  url={https://kotlinlang.org/spec}
+}
+@manual{mixedSite,
+  title={Mixed-Site Variance},
+  author={Ross Tate},
+  year={In FOOL 2013},
+  url={https://rosstate.org/publications/mixedsite/mixedsite-tate-fool13.pdf}
+}
+@inproceedings{VarianceSubtyping,
+author = {Igarashi, Atsushi and Viroli, Mirko},
+title = {On Variance-Based Subtyping for Parametric Types},
+year = {2002},
+isbn = {3540437592},
+publisher = {Springer-Verlag},
+address = {Berlin, Heidelberg},
+abstract = {We develop the mechanism of variant parametric types, inspired by structural virtual types by Thorup and Torgersen, as a means to enhance synergy between parametric and inclusive polymorphism in object-oriented languages. Variant parametric types are used to control both subtyping between different instantiations of one generic class and the visibility of their fields and methods. On one hand, one parametric class can be used as either covariant, contravariant, or bivariant by attaching a variance annotation--which can be either +, -, or *, respectively--to a type argument. On the other hand, the type system prohibits certain method/field accesses through variant parametric types, when those accesses can otherwise make the program unsafe. By exploiting variant parametric types, a programmer can write generic code abstractions working on a wide range of parametric types in a safe way. For instance, a method that only reads the elements of a container of strings can be easily modified so that it can accept containers of any subtype of string.The theoretical issues are studied by extending Featherweight GJ--an existing core calculus for Java with generics--with variant parametric types. By exploiting the intuitive connection to bounded existential types, we develop a sound type system for the extended calculus.},
+booktitle = {Proceedings of the 16th European Conference on Object-Oriented Programming},
+pages = {441–469},
+numpages = {29},
+series = {ECOOP '02}
+}
+@ARTICLE{JavaDeclarationSiteVar,
+title={Java wildcards meet definition-site variance},
+year={2012},
+author={John Altidor and Christoph Reichenbach and Yannis Smaragdakis},
+doi={10.1007/978-3-642-31057-7_23},
+pmid={null},
+pmcid={null},
+mag_id={1840171928},
+journal={European Conference on Object-Oriented Programming},
+abstract={Variance is concerned with the interplay of parametric polymorphism (i.e., templates, generics) and subtyping. The study of variance gives answers to the question of when an instantiation of a generic class can be a subtype of another. In this work, we combine the mechanisms of use-site variance (as in Java) and definition-site variance (as in Scala and C#) in a single type system, based on Java. This allows maximum flexibility in both the specification and use of generic types, thus increasing the reusability of code. Our VarJ calculus achieves a safe synergy of def-site and use-site variance, while supporting the full complexities of the Java realization of variance, including F-bounded polymorphism and wildcard capture. We show that the interaction of these features with definition-site variance is non-trivial and offer a full proof of soundness--the first in the literature for an approach combining variance mechanisms.}
+}
+@ARTICLE{JavaWildcards,
+title={Adding wildcards to the Java programming language},
+year={2004},
+author={Mads Torgersen and Christian Plesner Hansen and Erik Ernst and Peter von der Ahé and Gilad Bracha and Neal M. Gafter},
+doi={10.1145/967900.968162},
+pmid={null},
+pmcid={null},
+mag_id={1972445726},
+journal={ACM Symposium on Applied Computing},
+abstract={This paper describes wildcards, a new language construct designed to increase the flexibility of object-oriented type systems with parameterized classes. Based on the notion of use-site variance, wildcards provide a type safe abstraction over different instantiations of parameterized classes, by using '?' to denote unspecified type arguments. Thus they essentially unify the distinct families of classes often introduced by parametric polymorphism. Wildcards are implemented as part of the upcoming addition of generics to the Java™ programming language, and will thus be deployed world-wide as part of the reference implementation of the Java compiler javac available from Sun Microsystems, Inc. By providing a richer type system, wildcards allow for an improved type inference scheme for polymorphic method calls. Moreover, by means of a novel notion of wildcard capture, polymorphic methods can be used to give symbolic names to unspecified types, in a manner similar to the "open" construct known from existential types. Wildcards show up in numerous places in the Java Platform APIs of the upcoming release, and some of the examples in this paper are taken from these APIs.}
+}
+@inproceedings{FBoundedPolimorphism,
+  title={F-bounded quantification for object-oriented programming},
+  author={Canning, Peter and Cook, William and Hill, Walter and Mitchell, John and Oltho, Walter},
+  booktitle={Fourth International Conference on Functional Programming Languages and Computer Architecture},
+  pages={273--280},
+  year={1989}
+}
+@ARTICLE{CSharpDeclSiteVar,
+title={Variance and generalized constraints for C\# generics},
+year={2006},
+author={Burak Emir and Andrew Kennedy and Claudio V. Russo and Dachuan Yu},
+doi={10.1007/11785477_18},
+pmid={null},
+pmcid={null},
+mag_id={1595544871},
+journal={European Conference on Object-Oriented Programming},
+abstract={Generic types in C\# behave invariantly with respect to subtyping. We propose a system of type-safe variance for C\# that supports the declaration of covariant and contravariant type parameters on generic types. To support more widespread application of variance we also generalize the existing constraint mechanism with arbitrary subtype assertions on classes and methods. This extension is useful even in the absence of variance, and subsumes equational constraints proposed for Generalized Algebraic Data Types (GADTs). We formalize the subtype relation in both declarative and syntax-directed style, and describe and prove the correctness of algorithms for constraint closure and subtyping. Finally, we formalize and prove a type safety theorem for a featherweight language with variant classes and generalized constraints.}
+}
+@ARTICLE{NETVariance,
+title={Type safety of generics for the .NET common language runtime},
+year={2006},
+author={Nicu G. Fruja},
+doi={null},
+pmid={null},
+pmcid={null},
+mag_id={2475080049},
+journal={Lecture Notes in Computer Science},
+abstract={The Microsoft.NET Common Language Runtime (CLR) offers support for generic types and methods. We develop a mathematical specification for the generics design through a type system and a model for the semantics of a subset of bytecode instructions with generics. We formalize the type-consistency checks performed for the subset by the CLR bytecode verifier. We then prove that adding support for generics maintains the type safety of the CLR.}
+}
+@Article{CLRVariance,
+title={Common Language Infrastructure (CLI)},
+year={2012},
+author={null},
+doi={null},
+journal={Standard ECMA-335 6th edition},
+abstract={null}
+}
+@Article{JVM,
+title={The Java Virtual Machine Specification},
+year={2023},
+author={Tim Linholm and Frank Yellin and Gilad Bracha and Alex Buckley and Daniel Smith},
+doi={null},
+journal={Java SE 20 Edition},
+abstract={null}
+}
+@ARTICLE{TamingWildcards,
+title={Taming the wildcards: combining definition- and use-site variance},
+year={2011},
+author={John Altidor and Shan Shan Huang and Yannis Smaragdakis},
+doi={10.1145/1993498.1993569},
+pmid={null},
+pmcid={null},
+mag_id={2087299606},
+journal={ACM-SIGPLAN Symposium on Programming Language Design and Implementation},
+abstract={Variance allows the safe integration of parametric and subtype polymorphism. Two flavors of variance, definition-site versus use-site variance, have been studied and have had their merits hotly debated. Definition-site variance (as in Scala and C#) offers simple type-instantiation rules, but causes fractured definitions of naturally invariant classes; Use-site variance (as in Java) offers simplicity in class definitions, yet complex type-instantiation rules that elude most programmers.   We present a unifying framework for reasoning about variance. Our framework is quite simple and entirely denotational, that is, it evokes directly the definition of variance with a small core calculus that does not depend on specific type systems. This general framework can have multiple applications to combine the best of both worlds: for instance, it can be used to add use-site variance annotations to the Scala type system. We show one such application in detail: we extend the Java type system with a mechanism that modularly infers the definition-site variance of type parameters, while allowing use-site variance annotations on any type-instantiation.   Applying our technique to six Java generic libraries (including the Java core library) shows that 20-58 (depending on the library) of generic definitions are inferred to have single-variance; 8-63\% of method signatures can be relaxed through this inference, and up to 91\% of existing wildcard annotations are unnecessary and can be elided.}}
+@Article{Scala,
+title={Scala Language Specification Version 2.13} ,
+year={2023},
+author={Martin Odersky},
+doi={null},
+journal={null},
+abstract={null}
+}

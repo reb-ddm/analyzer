@@ -1,0 +1,23 @@
+\frametitle{Type Capturing}
+		\begin{minted}{kotlin}
+1  open class MyVector<T>(var array: MutableList<T> ) {
+2    fun transposed() : MutableList<MutableList<T>> {
+3      return MutableList(1){i -> array.subList(i,i+1)}
+4    }
+5  }
+\end{minted}
+
+
+	\pause
+		\begin{minted}{kotlin}
+	...
+6  var list : MutableList<Number> = MutableList(5){ i -> i}
+7  var vector  : MyVector<Number> = MyVector(list)
+8  var transposed  = vector.transposed() // MutableList<MutableList<Number>>
+9  var vector1 : MyVector<out Number> = vector
+10  var transposed1 = vector1.transposed() // MutableList<out MutableList<out Number>>
+11  var vector2 : MyVector<in Number> = vector
+12 var transposed2 = vector2.transposed() // MutableList< out MutableList<in Number>>
+	\end{minted}
+
+	

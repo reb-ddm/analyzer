@@ -1,0 +1,5 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+			\PYG{l+m}{1} \PYG{k+kd}{class} \PYG{n+nc}{Consumer} \PYG{o}{\PYGZlt{}}\PYG{k}{in} \PYG{n}{X}\PYG{o}{\PYGZgt{}} \PYG{p}{\PYGZob{}}
+			\PYG{l+m}{2}   \PYG{k+kd}{fun} \PYG{n+nf}{consume}\PYG{p}{(}\PYG{n}{input} \PYG{p}{:} \PYG{n}{X}\PYG{p}{)} \PYG{p}{:} \PYG{k+kt}{Unit} \PYG{o}{=} \PYG{n}{TODO}\PYG{p}{()}
+			\PYG{l+m}{3} \PYG{p}{\PYGZcb{}}
+\end{Verbatim}
