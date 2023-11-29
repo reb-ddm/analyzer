@@ -1,8 +1,5 @@
 (*
   TODO:
-  * finish implementation
-    - function 'assign_vars_in_const_eq_class'
-    - function 'assign_vars_in_non_const_eq_class'
   * test implementation
   * write documentation
 *)
@@ -21,6 +18,11 @@ let _join (t1 : domain) (t2 : domain) =
     let zts = Array.init (Array.length t1) (fun (i : int) -> (i, t1.(i), t2.(i))) in
     Some zts
   in
+  let const_offset t = match t with
+    | (_, b) -> b 
+  in
+  let diff t1 t2 = Z.((const_offset t1) - (const_offset t2))
+  in
   let cmp_z (x : zipped_element) (y : zipped_element) = 
     let cmp_z_ref (x : domain_element) (y : domain_element) : int =
       match x, y with
@@ -29,10 +31,6 @@ let _join (t1 : domain) (t2 : domain) =
       | (Some ii, _), (None, _) -> ii
       | (Some ii, _), (Some ij, _) -> ii - ij 
     in
-    let const_offset t = match t with
-      | (_, b) -> b
-    in
-    let diff t1 t2 = Z.((const_offset t1) - (const_offset t2)) in
     match x, y with
     | (_, t1i, t2i), (_, t1j, t2j) -> 
       let diff_e1 = cmp_z_ref t1i t1j in
@@ -89,8 +87,23 @@ let _join (t1 : domain) (t2 : domain) =
       done;
       !result;
     in
-    let assign_vars_in_const_eq_class _ats _zts _start _size _least_i _least_b = () in
-    let assign_vars_in_non_const_eq_class _ats _zts _start _size _least_i _least_b = () in
+    let assign_vars_in_const_eq_class (ats : annotated_element array) (zts : zipped_element array) start size least_i least_b =     
+      for i = start to start + size do
+        match zts.(i) with
+        | (ai, t1, t2) -> if Z.equal (diff t1 t2) (Z.of_int 0) then ats.(i) <- (ai, t1)
+          else
+            match t1 with
+            | (_, bj) -> ats.(i) <- (ai, (Some least_i, Z.sub bj least_b))
+      done;
+    in
+    let assign_vars_in_non_const_eq_class ats zts start size least_i least_b = 
+      for i = start to start + size do
+        match zts.(i) with
+        | (ai, t1, _) -> 
+          let bj = const_offset t1 in
+          ats.(i) <- (ai, (Some least_i, Z.sub bj least_b))
+      done;
+    in
     match zts with
     | None -> None
     | Some zts' ->
@@ -98,7 +111,13 @@ let _join (t1 : domain) (t2 : domain) =
       let i = ref 0 in
       while !i < Array.length zts' do 
         let n = size_of_eq_class zts' !i in 
-        (if n = 1 then () else
+        (if n = 1 then
+           let ztsi = zts'.(!i) in
+           match ztsi with
+           | (i', t1, t2) -> if is_const ztsi && Z.equal (diff t1 t2) (Z.of_int 0) then 
+               result.(!i) <- (i', (None, const_offset t1))
+             else result.(!i) <- (i', (Some i', Z.of_int 0))
+         else
           let (least_i, least_b) = least_index_var_in_eq_class zts' !i n in
           (if all_are_const_in_eq_class zts' !i n then
             assign_vars_in_const_eq_class result zts' !i n least_i least_b
@@ -108,26 +127,19 @@ let _join (t1 : domain) (t2 : domain) =
       done;
       Some result
   in
-  let strip_annotation (ats : annotated_domain) : domain =
+  let strip_annotation (ats : annotated_domain) : domain = 
     match ats with
       | None -> None
       | Some ats' -> Some (Array.map snd ats')
   in
   match t1, t2 with
+  | None, t2' -> t2'
+  | t1', None -> t1'
   | Some t1', Some t2' -> 
     let zipped = ts_zip t1' t2' in
     sort_z_by_expr zipped;
     let annotated = process_eq_classes zipped in
     sort_annotated annotated;
     let result = strip_annotation annotated in
-    Some result;
-  | _ -> None
-
-
-
-
-
-
-
-
-
+    result;
+ 
