@@ -1,7 +1,15 @@
 (*
-  TODO:
-  * test implementation
-  * write documentation
+TODO:
+  write documentation.
+
+  test overall behavior of the join function.
+
+  check if all elements in eq class are constant can be checked in O(1) instead of O(n),
+  since only one elemenet has to be checked and the other ones are equivalent.
+
+  The min index and right hand side value can be performed, when calculating
+  the size of an equivalence class. Then, only one pass over the dataset is
+  necessary.
 *)
 
 type domain_element = int option * Z.t
@@ -27,8 +35,8 @@ let _join (t1 : domain) (t2 : domain) =
     let cmp_z_ref (x : domain_element) (y : domain_element) : int =
       match x, y with
       | (None, _), (None, _) -> 0
-      | (None, _), (Some ij, _) -> -ij
-      | (Some ii, _), (None, _) -> ii
+      | (None, _), (Some _, _) -> -1
+      | (Some _, _), (None, _) -> 1
       | (Some ii, _), (Some ij, _) -> ii - ij 
     in
     match x, y with
@@ -61,7 +69,7 @@ let _join (t1 : domain) (t2 : domain) =
     in
     let size_of_eq_class zts (start : int) : int = 
       let ref_elem = zts.(start) in
-      let remaining = (Array.length zts) - start in
+      let remaining = (Array.length zts) - start - 1 in
       let result = ref 0 in
       for i = 0 to remaining do
         let current_elem = zts.(start + i) in
@@ -73,7 +81,7 @@ let _join (t1 : domain) (t2 : domain) =
       let result = ref (0, Z.of_int 0) in 
       match zts.(start) with
         | (i, (_, b), (_, _)) -> result := (i, b);
-      for i = start + 1 to start + size do
+      for i = start + 1 to start + size - 1 do
         match zts.(i) with
         | (j, (_, b), (_, _)) ->
           if j < fst !result then result := (j, b)
@@ -82,27 +90,27 @@ let _join (t1 : domain) (t2 : domain) =
     in
     let all_are_const_in_eq_class zts start size : bool = 
       let result = ref true in
-      for i = start to start + size do
+      for i = start to start + size - 1 do
         if not (is_const zts.(i)) then result := false;
       done;
-      !result;
+      !result
     in
     let assign_vars_in_const_eq_class (ats : annotated_element array) (zts : zipped_element array) start size least_i least_b =     
-      for i = start to start + size do
+      for i = start to start + size - 1 do
         match zts.(i) with
         | (ai, t1, t2) -> if Z.equal (diff t1 t2) (Z.of_int 0) then ats.(i) <- (ai, t1)
           else
             match t1 with
             | (_, bj) -> ats.(i) <- (ai, (Some least_i, Z.sub bj least_b))
-      done;
+      done
     in
     let assign_vars_in_non_const_eq_class ats zts start size least_i least_b = 
-      for i = start to start + size do
+      for i = start to start + size - 1 do
         match zts.(i) with
         | (ai, t1, _) -> 
           let bj = const_offset t1 in
           ats.(i) <- (ai, (Some least_i, Z.sub bj least_b))
-      done;
+      done
     in
     match zts with
     | None -> None
