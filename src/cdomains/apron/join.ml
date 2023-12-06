@@ -1,26 +1,107 @@
 (*
 TODO:
-  write documentation.
-
-  test overall behavior of the join function.
-
   check if all elements in eq class are constant can be checked in O(1) instead of O(n),
   since only one elemenet has to be checked and the other ones are equivalent.
 
   The min index and right hand side value can be performed, when calculating
   the size of an equivalence class. Then, only one pass over the dataset is
   necessary.
+
+  rename cmp_z_ref to cmp_ref
 *)
 
-type domain_element = int option * Z.t
-type domain = domain_element array option
-type zipped_element = int * domain_element * domain_element
-type zipped_domain = zipped_element array option
-type annotated_element = int * domain_element
-type annotated_domain = annotated_element array option
+(* ==================================================================================================== *)
+(* TYPES *)
+(* ==================================================================================================== *)
 
-(* least upper bound *)
-let _join (t1 : domain) (t2 : domain) =
+
+(* ---------------------------------------------------------------------------------------------------- *)
+(* This datatype represents equalities that we want to store. Each equality consists of a variable
+  that we want to assign a value to. The values that we can assign is either just a constant value
+  of the sum of the value of a reference variable plus a constant offset.
+  The optional integer in this datatype represents the index of the reference variable in the array
+  of equalities. The constant offset is represented by a value of type 'Z.t', which is defined
+  in the Zarith library, which allows to create integers of arbitrary size.
+*)
+type domain_element = int option * Z.t
+(* ---------------------------------------------------------------------------------------------------- *)
+
+
+(* ---------------------------------------------------------------------------------------------------- *)
+(* The domain datatype represents a conjunction of variable differences. An individual variable
+  difference is determined by the type 'domain_element' above, where the assigned variable is 
+  determined by the index of the data element in this array. A 'domain' object has an optional
+  quantifier, since a conjunction of assignments can possibly be 'false', represented by the
+  value 'None', when the assignment is unsatisfiable for all assignments.
+*)
+type domain = domain_element array option
+(* ---------------------------------------------------------------------------------------------------- *)
+
+
+(* ---------------------------------------------------------------------------------------------------- *)
+(* While computing the join of two conjunctions of equalities, we have to consider the assignments
+  of both conjunctions for the same variable as single unit. Furthermore, we will loose the implicit
+  knowledge of the assigned variable. Therefore, we consider triples of values, where the first value
+  is the explicit statement of the assigned variable. The second and third variable are both
+  assignments to that variable.
+*)
+type zipped_element = int * domain_element * domain_element
+(* ---------------------------------------------------------------------------------------------------- *)
+
+
+(* ---------------------------------------------------------------------------------------------------- *)
+(* Analogously to the domain definition, which is an optional array of domain elements, we consider
+  arrays of the aforementioned tripes. Therefore, this datatype represents an optional array
+  of the previous data type.
+*)
+type zipped_domain = zipped_element array option
+(* ---------------------------------------------------------------------------------------------------- *)
+
+
+(* ---------------------------------------------------------------------------------------------------- *)
+(* When processing the equivalence classes as are defined on the combination of both conjunctions
+  considered jointly, we will will determine the resulting assignment to one variable from
+  one triple as described above. The resulting variable assignment will be stored in an own array
+  that keeps the explicit statement of the variable index that is being assigned to. Therefore
+  This data type is a pair of this variable index and the target assignement.
+*)
+type annotated_element = int * domain_element
+(* ---------------------------------------------------------------------------------------------------- *)
+
+
+(* ---------------------------------------------------------------------------------------------------- *)
+(* As in the previous cases above, this data type represents the conjunction of assignements as
+  defined by the data type above. In this case the assigned variables will be represented by the
+  annotated index in each data element and not by the index of the element in the array itself.
+*)
+type annotated_domain = annotated_element array option
+(* ---------------------------------------------------------------------------------------------------- *)
+
+
+(* ==================================================================================================== *)
+(* ALGORITHM
+   The follwing algorithm is a direct translation of the paper's algorithm in lemma 4.4.
+   It computes the 'join', the least upper bound, of two conjunctions of equalities.
+   The algorithm operates by considering both assignments for each variable and treating them
+   as single unit. These elements need to be sorted according to their equivalence classes,
+   which depend on both reference variables and the differences in constant offsets. Since 
+   this sort operation changes the order of elements and beforehand the index of an element in the 
+   array implicitly determined the assigned variable, this information has to be preserved. Hence,
+   when building a single unit of two assignments to the same variable, we also have to store
+   the index explicitly.
+   Depeding on the type of equivalence class, whether it contains a single element, if not, whether
+   all elements in the equivalence class do not depend on any other reference variable, the final
+   assignments in the result data structure are made. Since ordering the data elements into their
+   respective equivalence classes changes their order, the original ordering has to be
+   restored.
+   Finally, the result has to be expressed in the same data type as the inputs to the join
+   function. Since the annotations still remain, the last step is to remove them to obtain the
+   value that can be returned and hides all intermediate data structures.
+*)
+(* ==================================================================================================== *)
+
+(* ---------------------------------------------------------------------------------------------------- *)
+let join (t1 : domain) (t2 : domain) =
   let ts_zip t1 t2 : zipped_domain =
     if Array.length t1 <> Array.length t2 then None else
     let zts = Array.init (Array.length t1) (fun (i : int) -> (i, t1.(i), t2.(i))) in
@@ -149,5 +230,50 @@ let _join (t1 : domain) (t2 : domain) =
     let annotated = process_eq_classes zipped in
     sort_annotated annotated;
     let result = strip_annotation annotated in
-    result;
- 
+    result
+(* ---------------------------------------------------------------------------------------------------- *)
+
+
+(* ==================================================================================================== *)
+(* TESTS *)
+(* ==================================================================================================== *)
+
+
+(* ---------------------------------------------------------------------------------------------------- *)
+(* this test tests the overall behavior of the join function. It uses as inputs the conjunctions 
+  as in the paper' example. *)
+let _ = print_endline "";
+  let t1 : domain = Some [|
+    (Some 0, Z.of_int 0);
+    (Some 1, Z.of_int 0);
+    (Some 0, Z.of_int 0);
+    (Some 1, Z.of_int 5);
+    (Some 0, Z.of_int 5);
+    (Some 0, Z.of_int 3);
+    (Some 0, Z.of_int 2)
+  |] in
+  let t2 : domain = Some [|
+    (Some 0, Z.of_int 0);
+    (Some 1, Z.of_int 0);
+    (Some 1, Z.of_int (-5));
+    (Some 1, Z.of_int 5);
+    (Some 1, Z.of_int 0);
+    (Some 1, Z.of_int 1);
+    (Some 1, Z.of_int 0)
+  |] in 
+  let expected_result : domain = Some [|
+    (Some 0, Z.of_int 0);
+    (Some 1, Z.of_int 0);
+    (Some 2, Z.of_int 0);
+    (Some 1, Z.of_int 5);
+    (Some 2, Z.of_int 5);
+    (Some 5, Z.of_int 0);
+    (Some 5, Z.of_int (-1))
+  |] in
+  print_endline "JOIN TEST 1";
+  let r = join t1 t2 in
+  print_string "assertion: ";
+  if r = expected_result then print_endline "true" else print_endline "false";
+  print_endline "test complete"
+(* ---------------------------------------------------------------------------------------------------- *)
+
