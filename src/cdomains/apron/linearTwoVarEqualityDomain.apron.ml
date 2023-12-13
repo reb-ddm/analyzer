@@ -145,6 +145,8 @@ module EqualitiesArray = struct
 
   let is_empty m = length m = 0
 
+  let is_top_array m = Array.fold_lefti (fun b i (a, e) -> if e == Z.zero && Option.is_some a && Option.get a == i then b else false) true m
+
   let find_reference_variable d var_index = fst d.(var_index)
 
 
@@ -335,7 +337,7 @@ module ExpressionBounds: (SharedFunctions.ConvBounds with type t = VarManagement
 struct
   include VarManagement
 
-  let bound_texpr t texpr = Some Z.zero, Some Z.zero (*TODO*)
+  let bound_texpr t texpr = None, None(*Some (Z.of_int (-1000)), Some (Z.of_int (1000)) TODO*)
 
 
   let bound_texpr d texpr1 =
@@ -358,36 +360,19 @@ struct
   module Convert = SharedFunctions.Convert (V) (Bounds) (struct let allow_global = true end) (SharedFunctions.Tracked) 
 
   type var = V.t
-  (* prints the current variable equalities with resolved variable names *)
-  let show varM =
-    let lookup i = Var.to_string (Environment.var_of_dim varM.env i) in
-    let show_var i tuple =
-      match tuple with
-      | (None, offset) -> "Variable " ^ string_of_int i ^ " named " ^ (lookup i) ^ " equals " ^ Z.to_string offset ^ "\n"
-      | (Some index, offset) -> "Variable " ^ string_of_int i ^ " named " ^ (lookup i) ^ " equals " ^ lookup index ^ " + " ^ Z.to_string offset ^ "\n"
-    in match varM.d with
-    | None -> "No equalities available"
-    | Some arr -> Array.fold_left (fun acc elem -> acc ^ elem ) "" (Array.mapi show_var arr)  
-
-
-  let pretty () (x:t) = text (show x)
-  let printXml f x = BatPrintf.fprintf f "<value>\n<map>\n<key>\nmatrix\n</key>\n<value>\n%s</value>\n<key>\nenv\n</key>\n<value>\n%s</value>\n</map>\n</value>\n" (XmlUtil.escape (Format.asprintf "%s" (show x) )) (XmlUtil.escape (Format.asprintf "%a" (Environment.print: Format.formatter -> Environment.t -> unit) (x.env)))
 
   let name () = "lin2vareq"
 
   let to_yojson _ = failwith "ToDo Implement in future"
-
-
+  
   let is_bot t = equal t (bot ())
+  let is_bot_env t = t.d = None
 
-  let bot_env = {d = None; env = Environment.make [||] [||]}
-
-  let top_env env = {d = Some (Array.init (Environment.size env) (fun i -> (Some i, Z.zero))); env = env}
+(*this shows "top" for a specific environment to enable the calculations. It is the identity of all equalities*)
+  let identity env = {d = Some (Array.init (Environment.size env) (fun i -> (Some i, Z.zero))); env = env}
 
   let is_bot_env t = t.d = None
-  (*Would the top not be the identity 
-
-in affineEq? 
+  (*Would the top not be the identity matrix in affineEq? 
      i.e. the array where each variable is assigned itself with no other coeffcients? *)
   let top () = failwith "D.top ()"
 
@@ -398,11 +383,11 @@ in affineEq?
   let meet t1 t2 =
     let sup_env = Environment.lce t1.env t2.env in
     let t1, t2 = change_d t1 sup_env true false, change_d t2 sup_env true false in
-    print_string "t1 after change_d\n";
+    (*print_string "t1 after change_d\n";
     print_string @@ show t1;
     print_string "t2 after change_d\n";
     print_string @@ show t2;
-    print_string "end\n";
+    print_string "end\n";*)
     let subst_var ts x t = 
       match !ts with
       | None -> ()
@@ -479,17 +464,25 @@ in affineEq?
       | (None, b) ->  
         (match ts.(i) with
          | (None, b') -> Z.equal b b'
-         | _ -> false)
+         | (Some j, b') -> (match ts.(j) with
+           | (None, bj) -> Z.equal bj (Z.sub b b')
+           | _ -> false
+         ))
       | (Some j, b) ->  
         (match ts.(i), ts.(j) with
-         | (None, _), (_, _) -> false
-         | (_, _), (None, _) -> false
+         | (None, b1), (None, b2) -> Z.equal b1 (Z.add b2 b)
+         | (Some h1, b1), (None, b2) -> (match ts.(h1) with
+         | (None, bh1) -> Z.equal (Z.add bh1 b1) (Z.add b2 b)
+         | _ -> false)
+         | (None, b1), (Some h2, b2) -> (match ts.(h2) with
+         | (None, bh2) -> Z.equal (Z.sub b1 bh2) (Z.add b2 b)
+         | _ -> false)
          | (Some h1, b1), (Some h2, b2) ->
            h1 = h2 && Z.equal b1 (Z.add b2 b)) 
     in  
     if env_comp = -2 || env_comp > 0 then false else
-    if is_bot t1 || is_top_env t2 then true else
-    if is_bot t2 || is_top_env t1 then false else (
+    if is_bot_env t1 || is_top t2 then true else
+    if is_bot_env t2 || is_top t1 then false else (
       let m1, m2 = Option.get t1.d, Option.get t2.d in
       let m1' = if env_comp = 0 then m1 else dim_add (Environment.dimchange t1.env t2.env) m1 in
       let result : bool ref = ref true in
@@ -634,9 +627,10 @@ in affineEq?
       let result = strip_annotation annotated in
       result
     in
-    if is_bot a then b else if is_bot b then a else
+    if is_bot_env a then b else if is_bot_env b then a else
       match Option.get a.d, Option.get b.d with
-      | x, y when is_top_env a || is_top_env b -> {d = Some (EArray.empty ()); env = Environment.lce a.env b.env}
+      | x, y when is_top a || is_top b -> let new_env = Environment.lce a.env b.env 
+        in (identity new_env)
       | x, y when (Environment.compare a.env b.env <> 0) ->
         let sup_env = Environment.lce a.env b.env in
         let mod_x = dim_add (Environment.dimchange a.env sup_env) x in
@@ -669,7 +663,7 @@ in affineEq?
   (* TODO: I'm not sure if forget_vars should remove the variable from the data structure, 
      or just forget the information we currently have about the variable. Until now, the second possibility is implemented.*)
   let forget_vars t vars = 
-    if is_bot t || is_top_env t then t
+    if is_bot_env t || is_top t then t
     else
       let m = Option.get t.d in
       if List.is_empty vars then t else
@@ -705,15 +699,16 @@ in affineEq?
                           (* Statement "assigned_var = assigned_var + off" *)
                           subtract_const_from_var t assigned_var off
                         else
+                          (* Statement "assigned_var = exp_var + off" (assigned_var is not the same as exp_var) *) 
                           let empty_array = EqualitiesArray.make_empty_array (VarManagement.size t) in
-                          let added_equality = empty_array.(exp_var) <- (Some assigned_var, off); empty_array in
+                          let added_equality = empty_array.(assigned_var) <- (Some exp_var, off); empty_array in
                           meet abstract_exists_var {d = Some added_equality; env = t.env} 
                       end 
                 end
             end
 
         end 
-      | None -> bot () end 
+      | None -> bot_env end 
 
 
 
@@ -727,7 +722,7 @@ in affineEq?
     match Convert.texpr1_expr_of_cil_exp t t.env exp (Lazy.force no_ov) with
     | exp -> assign_texpr t var exp
     | exception Convert.Unsupported_CilExp _ ->
-      if is_bot t then t else forget_vars t [var]
+      if is_bot_env t then t else forget_vars t [var]
 
   let assign_exp t var exp no_ov =
     let res = assign_exp t var exp no_ov in
@@ -757,7 +752,7 @@ in affineEq?
     let t_primed = add_vars t primed_vars in
     let multi_t = List.fold_left2 (fun t' v_prime (_,v') -> assign_var t' v_prime v') t_primed primed_vars vv's in
     match multi_t.d with
-    | Some arr when not @@ is_top_env multi_t -> 
+    | Some arr when not @@ is_top multi_t -> 
       let switched_arr = List.fold_left2 (fun multi_t assigned_var primed_var-> assign_var multi_t assigned_var primed_var) multi_t assigned_vars primed_vars in
       let res = drop_vars switched_arr primed_vars true in
       let x = Option.get res.d in
@@ -816,53 +811,67 @@ in affineEq?
      tcons -> tree constraint (expression < 0)
      -> does not have types (overflow is type dependent)
   *)
+  let print_coeff_vec l (env : Environment.t) = 
+    let print_element _ e = match e with 
+      | (a, Some x) -> print_string ((Z.to_string a) ^ " * " ^ (Var.to_string ( Environment.var_of_dim env x)) ^ " + ") 
+      | (a, None) -> print_string ((Z.to_string a) ^ "+") in
+    List.fold_left print_element () l; print_newline ()
 
+  let print_final_expr l (env : Environment.t) =
+    let print_element _ i a = if i == 0 then print_string ((Z.to_string a) ^ " + ") else 
+        print_string ((Z.to_string a) ^ " * " ^ (Var.to_string ( Environment.var_of_dim env (i-1))) ^ " + ") in 
+    List.fold_lefti print_element () l; print_newline ()
 
-  let meet_tcons t tcons expr = 
+  let meet_tcons t tcons _ = 
     (* The expression is evaluated using an array of coefficients. The first element of the array belongs to the constant followed by the coefficients of all variables 
        depending on the result in the array after the evaluating including resolving the constraints in t.d the tcons can be evaluated and additional constraints can be added to t.d *)
     let expr_init = Array.init ((Environment.size t.env) +1) (fun _ -> Z.zero) in 
     match t.d with 
-    | None -> t
-    | Some d ->
-      let cv's = get_coeff_vec t (Texpr1.to_expr @@ Tcons1.get_texpr1 tcons) in
-      let update (expr : Z.t Array.t)( c , v) = 
-        match v with 
-        | None -> Array.set expr 0 (Z.add expr.(0) c) ; expr 
-        | Some idx -> match d.(idx) with 
-          | (Some idx_i,c_i) -> Array.set expr 0 (Z.add expr.(0)  (Z.mul c  c_i)) ; Array.set expr (idx_i + 1) (Z.add expr.(idx_i + 1) c_i) ; expr
-          | (None, c_i) -> Array.set expr 0 (Z.add expr.(0)  (Z.mul c  c_i)) ; expr
-      in 
-      let final_expr = List.fold_left (fun expr cv -> update expr cv ) expr_init cv's in 
-      let is_constant = List.fold_left (fun b a -> if Z.equal a Z.zero then b else false) true @@ List.tl @@ Array.to_list final_expr in
-      let var_count = List.count_matching (fun a -> if Z.equal a Z.zero then false else true) @@ List.tl @@ Array.to_list final_expr 
-      in if is_constant then 
-        match Tcons1.get_typ tcons with 
-        | EQ -> if Z.equal final_expr.(0) Z.zero then t else bot()
-        | SUPEQ -> if Z.geq final_expr.(0) Z.zero then t else bot()
-        | SUP -> if Z.gt final_expr.(0) Z.zero then t else bot()
-        | DISEQ ->  if Z.equal final_expr.(0) Z.zero then bot() else t
-        | EQMOD scalar -> t (*Not supported right now
-                              if Float.equal ( Float.modulo (Z.to_float final_expr.(0)) (convert_scalar scalar )) 0. then t else {d = None; env = t.env}*)
-      else if var_count == 1 then
-        let var = List.findi (fun i a -> if Z.equal a Z.zero then false else true) @@ Array.to_list final_expr in
-        let c = if Z.divisible final_expr.(0) @@ Tuple2.second var then Some (Z.(- final_expr.(0) / (Tuple2.second var))) else None in
-        match Tcons1.get_typ tcons with 
-        | EQ -> if Option.is_none c then t else  
-            let expr = Texpr1.to_expr @@ Texpr1.cst t.env  (Coeff.s_of_int @@ Z.to_int (Option.get c)) in 
-            meet t (assign_texpr (top_env t.env) (Environment.var_of_dim t.env (Tuple2.first var)) expr) 
-        | _ -> t (*Not supported right now*)
-      else if var_count == 2 then 
-        let v12 =  List.fold_righti (fun i a l -> if Z.equal a Z.zero then l else (i,a)::l) (List.tl @@ Array.to_list final_expr) [] in
-        let a1 = Tuple2.second (List.hd v12) in  
-        let a2 = Tuple2.second (List.hd v12) in
-        let var1 = Environment.var_of_dim t.env (Tuple2.first (List.hd v12)) in 
-        let var2 = Environment.var_of_dim t.env (Tuple2.first (List.hd @@ List.tl v12)) in
-        match Tcons1.get_typ tcons with 
-        | EQ -> if Z.equal a1 Z.one && Z.equal a2  Z.one then meet t (assign_var (top_env t.env) var1 var2) else t
-        | _-> t (*Not supported right now*)
-      else 
-        t (*For any other case we don't know if the (in-) equality is true or false or even possible therefore we just return t *)
+    | None -> bot_env
+    | Some d -> if is_bot_env t then bot_env else
+        let cv's = get_coeff_vec t (Texpr1.to_expr @@ Tcons1.get_texpr1 tcons) in
+        let update (expr : Z.t Array.t)( c , v) = 
+          match v with 
+          | None -> Array.set expr 0 (Z.add expr.(0) c) ; expr 
+          | Some idx -> match d.(idx) with 
+            | (Some idx_i,c_i) -> Array.set expr 0 (Z.add expr.(0)  (Z.mul c  c_i)) ; Array.set expr (idx_i + 1) (Z.add expr.(idx_i + 1) c) ; expr
+            | (None, c_i) -> Array.set expr 0 (Z.add expr.(0)  (Z.mul c  c_i)) ; expr
+        in 
+        let final_expr = List.fold_left (fun expr cv -> update expr cv ) expr_init cv's in 
+        let var_count = List.count_matching (fun a -> if Z.equal a Z.zero then false else true) ( List.tl ( Array.to_list final_expr)) 
+        in (*
+      print_string "Meet_tcons:\n";
+      print_coeff_vec cv's t.env;
+      print_final_expr (Array.to_list final_expr) t.env;
+      print_string ("Meet_tcons var_count is " ^ (Int.to_string var_count) ^ " and the type is " ^(Lincons0.string_of_typ (Tcons1.get_typ tcons)) ^"\n");
+      *)
+        if var_count == 0 then 
+          match Tcons1.get_typ tcons with 
+          | EQ -> if Z.equal final_expr.(0) Z.zero then t else bot_env
+          | SUPEQ -> if Z.geq final_expr.(0) Z.zero then t else bot_env
+          | SUP -> if Z.gt final_expr.(0) Z.zero then t else bot_env
+          | DISEQ ->  if Z.equal final_expr.(0) Z.zero then bot_env else t
+          | EQMOD scalar -> t (*Not supported right now
+                                if Float.equal ( Float.modulo (Z.to_float final_expr.(0)) (convert_scalar scalar )) 0. then t else {d = None; env = t.env}*)
+        else if var_count == 1 then
+          let var = List.findi (fun i a -> if Z.equal a Z.zero then false else true) @@ Array.to_list final_expr in
+          let c = if Z.divisible final_expr.(0) @@ Tuple2.second var then Some (Z.(- final_expr.(0) / (Tuple2.second var))) else None in
+          match Tcons1.get_typ tcons with 
+          | EQ -> if Option.is_none c then t else  
+              let expr = Texpr1.to_expr @@ Texpr1.cst t.env  (Coeff.s_of_int @@ Z.to_int (Option.get c)) in 
+              meet t (assign_texpr (identity t.env) (Environment.var_of_dim t.env (Tuple2.first var)) expr) 
+          | _ -> t (*Not supported right now*)
+        else if var_count == 2 then 
+          let v12 =  List.fold_righti (fun i a l -> if Z.equal a Z.zero then l else (i,a)::l) (List.tl @@ Array.to_list final_expr) [] in
+          let a1 = Tuple2.second (List.hd v12) in  
+          let a2 = Tuple2.second (List.hd v12) in
+          let var1 = Environment.var_of_dim t.env (Tuple2.first (List.hd v12)) in 
+          let var2 = Environment.var_of_dim t.env (Tuple2.first (List.hd @@ List.tl v12)) in
+          match Tcons1.get_typ tcons with 
+          | EQ -> if Z.equal a1 Z.one && Z.equal a2  Z.one then meet t (assign_var (identity t.env) var1 var2) else t
+          | _-> t (*Not supported right now*)
+        else 
+          t (*For any other case we don't know if the (in-) equality is true or false or even possible therefore we just return t *)
 
 
 
@@ -923,9 +932,9 @@ in affineEq?
   *)
   let assert_cons d e negate no_ov =
     let no_ov = Lazy.force no_ov in
-    if M.tracing then M.tracel "assert_cons" "assert_cons with expr: %a %b" d_exp e no_ov;
+    if M.tracing then M.tracel "assert_cons" "assert_cons with expr: %a %b\n" d_exp e no_ov;
     match Convert.tcons1_of_cil_exp d d.env e negate no_ov with
-    | tcons1 -> meet_tcons d tcons1 e
+    | tcons1 -> meet_tcons d tcons1 e    
     | exception Convert.Unsupported_CilExp _ -> d
 
   let assert_cons d e negate no_ov = timing_wrap "assert_cons" (assert_cons d e negate) no_ov
