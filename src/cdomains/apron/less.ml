@@ -44,12 +44,19 @@ let less (t1 : domain) (t2 : domain) : bool =
     | (None, b) -> 
       (match ts.(i) with
        | (None, b') -> Z.equal b b'
-       | _ -> false)
+       | (Some j, b') -> (match ts.(j) with
+           | (None, bj) -> Z.equal bj (Z.sub b b')
+           | _ -> false
+         ))
     | (Some j, b) -> 
       (match ts.(i), ts.(j) with
        | (None, b1), (None, b2) -> Z.equal b1 (Z.add b2 b)
-       | (_, _), (None, _) -> false 
-       | (None, _), (_, _) -> false
+       | (Some h1, b1), (None, b2) -> (match ts.(h1) with
+         | (None, bh1) -> Z.equal (Z.add bh1 b1) (Z.add b2 b)
+         | _ -> false)
+       | (None, b1), (Some h2, b2) -> (match ts.(h2) with
+         | (None, bh2) -> Z.equal (Z.sub b1 bh2) (Z.add b2 b)
+         | _ -> false)
        | (Some h1, b1), (Some h2, b2) ->
          h1 = h2 && Z.equal b1 (Z.add b2 b))
   in
