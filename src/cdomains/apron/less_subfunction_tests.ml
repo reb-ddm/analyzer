@@ -17,23 +17,30 @@ type domain = domain_element array option;;
 
 (* ---------------------------------------------------------------------------------------------------- *)
 let implies (ts : domain_element array) (t : domain_element) (i : int) : bool =
-  match t with
-  | (None, b) -> 
-    (match ts.(i) with
-     | (None, b') -> Z.equal b b'
-     | _ -> false)
-  | (Some j, b) -> 
-    (match ts.(i), ts.(j) with
-     | (None, b1), (None, b2) -> Z.equal b1 (Z.add b2 b)
-     | (None, _), (_, _) -> false
-     | (_, _), (None, _) -> false
-     | (Some h1, b1), (Some h2, b2) ->
-       h1 = h2 && Z.equal b1 (Z.add b2 b))
+    match t with
+    | (None, b) -> 
+      (match ts.(i) with
+       | (None, b') -> Z.equal b b'
+       | (Some j, b') -> (match ts.(j) with
+           | (None, bj) -> Z.equal bj (Z.sub b b')
+           | _ -> false
+         ))
+    | (Some j, b) -> 
+      (match ts.(i), ts.(j) with
+       | (None, b1), (None, b2) -> Z.equal b1 (Z.add b2 b)
+       | (Some h1, b1), (None, b2) -> (match ts.(h1) with
+         | (None, bh1) -> Z.equal (Z.add bh1 b1) (Z.add b2 b)
+         | _ -> false)
+       | (None, b1), (Some h2, b2) -> (match ts.(h2) with
+         | (None, bh2) -> Z.equal (Z.sub b1 bh2) (Z.add b2 b)
+         | _ -> false)
+       | (Some h1, b1), (Some h2, b2) ->
+         h1 = h2 && Z.equal b1 (Z.add b2 b))
 (* ---------------------------------------------------------------------------------------------------- *)
 
 
 (* ---------------------------------------------------------------------------------------------------- *)
-let less (t1 : domain) (t2 : domain) : bool =  
+let _less (t1 : domain) (t2 : domain) : bool =  
   match t1, t2 with
   | None, _ -> true
   | _, None -> false
@@ -173,29 +180,67 @@ let _ = print_endline "";
 
 
 (* ---------------------------------------------------------------------------------------------------- *)
+(* Tests that a non constant equality is implied if both the assignbed and reference variable
+  are constant such that their constant offsets match the new equality.
+*)
 let _ = print_endline "";
-  let t1 : domain = Some [|
-    (Some 0, Z.of_int 0);
-    (Some 1, Z.of_int 0);
-    (Some 0, Z.of_int 0);
-    (Some 1, Z.of_int 5);
-    (Some 0, Z.of_int 5);
-    (Some 0, Z.of_int 3);
-    (Some 0, Z.of_int 2);
+  let ts : domain_element array = [|
+    (None, Z.of_int 2);
+    (None, Z.of_int 5);
   |] in
-  let t2 : domain = Some [|
-    (Some 0, Z.of_int 0);
-    (Some 1, Z.of_int 0);
-    (Some 2, Z.of_int 0);
-    (Some 3, Z.of_int 0);
-    (Some 4, Z.of_int 0);
-    (Some 5, Z.of_int 0);
-    (Some 6, Z.of_int 0);
-  |] in
+  let t : domain_element = (Some 0, Z.of_int 3) in
+  let i : int = 1 in
   let expected_result : bool = true in
-  print_endline "LESS TEST 1";
-  let r = less t1 t2 in
+  print_endline "IMPLIES TEST 6";
+  let r = implies ts t i in
   print_string "assertion: ";
   if r = expected_result then print_endline "true" else print_endline "false";
   print_endline "test complete"
 (* ---------------------------------------------------------------------------------------------------- *)
+
+
+(* ---------------------------------------------------------------------------------------------------- *)
+(* Tests that a non constant equality equality is implied, when the assigned variable is non constant,
+  but the reference variable is. This equality is implied if the reference variable of the
+  assigned variable is constant itself such that the equality as described by the parameter t
+  is satisfied.
+*)
+let _ = print_endline "";
+  let ts : domain_element array = [|
+    (None, Z.of_int 2);
+    (Some 0, Z.of_int 3);
+    (None, Z.of_int 2);
+  |] in
+  let t : domain_element = (Some 2, Z.of_int 3) in
+  let i : int = 1 in
+  let expected_result : bool = true in
+  print_endline "IMPLIES TEST 7";
+  let r = implies ts t i in
+  print_string "assertion: ";
+  if r = expected_result then print_endline "true" else print_endline "false";
+  print_endline "test complete"
+(* ---------------------------------------------------------------------------------------------------- *)
+
+
+(* ---------------------------------------------------------------------------------------------------- *)
+(* Tests that a non constant equality is implied, when the assigned variable is constant, but the
+  reference variable is non constant. This can be true, when the reference variable of the reference
+  variable of the new equality is constant, such that the equality conditions regarding the constant
+  offsets as described by the new equality are met.
+*)
+let _ = print_endline "";
+  let ts : domain_element array = [|
+    (None, Z.of_int (-1));
+    (None, Z.of_int 4);
+    (Some 0, Z.of_int 3);
+  |] in
+  let t : domain_element = (Some 2, Z.of_int 2) in
+  let i : int = 1 in
+  let expected_result : bool = true in
+  print_endline "IMPLIES TEST 8";
+  let r = implies ts t i in
+  print_string "assertion: ";
+  if r = expected_result then print_endline "true" else print_endline "false";
+  print_endline "test complete"
+(* ---------------------------------------------------------------------------------------------------- *)
+
