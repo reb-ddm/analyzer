@@ -47,8 +47,9 @@ let less (t1 : domain) (t2 : domain) : bool =
        | _ -> false)
     | (Some j, b) -> 
       (match ts.(i), ts.(j) with
+       | (None, b1), (None, b2) -> Z.equal b1 (Z.add b2 b)
+       | (_, _), (None, _) -> false 
        | (None, _), (_, _) -> false
-       | (_, _), (None, _) -> false
        | (Some h1, b1), (Some h2, b2) ->
          h1 = h2 && Z.equal b1 (Z.add b2 b))
   in
@@ -164,11 +165,12 @@ let _ = print_endline "";
 
 
 (* ---------------------------------------------------------------------------------------------------- *)
-(* tests that a more concrete conjunction does not imply a more general one.
-  That is, because to obtain the more concrete conjunction a specific substitution
-  might have been needed to take place. Therefore, in general this implication does not
-  hold since any different assignment to the variable that changed between the more general
-  and more concrete conjunction might result in conjuncts that are not implied. *)
+(* tests that a more concrete conjunction can imply a more general one.
+  That is, because every possible state that might satisfy the more concrete conjunction
+  might be a subset of all the states that satisfy the more general conjunction.
+  Therefore, when the more concrete conjunction is true, the according assignment
+  neccessarily implies the more general conjunction.
+*)
 let _ = print_endline ""; 
   let t1 : domain = Some [|
     (None, Z.of_int 1); 
@@ -188,8 +190,90 @@ let _ = print_endline "";
     (Some 0, Z.of_int 3); 
     (Some 0, Z.of_int 2)
   |] in
-  let expected_result : bool = false in
+  let expected_result : bool = true in
   print_endline "LESS TEST 4";
+  let r = less t1 t2 in
+  print_string "assertion: ";
+  if r = expected_result then print_endline "true" else print_endline "false";
+  print_endline "test complete"
+(* ---------------------------------------------------------------------------------------------------- *)
+
+
+(* ---------------------------------------------------------------------------------------------------- *)
+(* tests an implication example from the paper, where the second conjunction equals to the fist
+  one with just one conjunct missing. To map this example to the representation used in this file,
+  the variable assignment missing is replaced by a trivial assignment of the variable to itself.
+*)
+let _ = print_endline ""; 
+  let t1 : domain = Some [|
+    (Some 0, Z.of_int 0);
+    (None, Z.of_int 2);
+    (Some 0, Z.of_int 1);
+    (Some 0, Z.of_int 2)
+  |] in
+  let t2 : domain = Some [|
+    (Some 0, Z.of_int 0);
+    (None, Z.of_int 2);
+    (Some 2, Z.of_int 0);
+    (Some 0, Z.of_int 2)
+  |] in
+  let expected_result : bool = true in
+  print_endline "LESS TEST 5";
+  let r = less t1 t2 in
+  print_string "assertion: ";
+  if r = expected_result then print_endline "true" else print_endline "false";
+  print_endline "test complete"
+(* ---------------------------------------------------------------------------------------------------- *)
+
+
+(* ---------------------------------------------------------------------------------------------------- *)
+(* tests an implication example from the paper, where the second conjunction equals to the fist
+  one with just one conjunct missing. To map this example to the representation used in this file,
+  the variable assignment missing is replaced by a trivial assignment of the variable to itself.
+*)
+let _ = print_endline ""; 
+  let t1 : domain = Some [|
+    (Some 0, Z.of_int 0);
+    (None, Z.of_int 2);
+    (Some 2, Z.of_int 0);
+    (Some 0, Z.of_int 2)
+  |] in
+  let t2 : domain = Some [|
+    (Some 0, Z.of_int 0);
+    (Some 1, Z.of_int 0);
+    (Some 2, Z.of_int 0);
+    (Some 0, Z.of_int 2)
+  |] in
+  let expected_result : bool = true in
+  print_endline "LESS TEST 6";
+  let r = less t1 t2 in
+  print_string "assertion: ";
+  if r = expected_result then print_endline "true" else print_endline "false";
+  print_endline "test complete"
+(* ---------------------------------------------------------------------------------------------------- *)
+
+
+(* ---------------------------------------------------------------------------------------------------- *)
+(* tests an example of transitivity for implication of conjunctions of equivalences.
+  Since the implied conjunction from test 5 is the implying conjunction in test 6,
+  it must hold that the implying conjunction in test 5 also implies the implied conjunction
+  in test 6.
+*)
+let _ = print_endline ""; 
+  let t1 : domain = Some [|
+    (Some 0, Z.of_int 0);
+    (None, Z.of_int 2);
+    (Some 0, Z.of_int 1);
+    (Some 0, Z.of_int 2)
+  |] in
+  let t2 : domain = Some [|
+    (Some 0, Z.of_int 0);
+    (Some 1, Z.of_int 0);
+    (Some 2, Z.of_int 0);
+    (Some 0, Z.of_int 2)
+  |] in
+  let expected_result : bool = true in
+  print_endline "LESS TEST 7";
   let r = less t1 t2 in
   print_string "assertion: ";
   if r = expected_result then print_endline "true" else print_endline "false";
