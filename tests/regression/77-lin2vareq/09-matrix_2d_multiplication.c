@@ -20,3 +20,5 @@ int main() {
 
     return 0;
 }
+
+//This test case checks the correctness of matrix multiplication

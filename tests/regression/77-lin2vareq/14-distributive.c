@@ -13,3 +13,5 @@ int main() {
 
     return 0;
 }
+
+//This test case checks the distributive property of multiplication over addition

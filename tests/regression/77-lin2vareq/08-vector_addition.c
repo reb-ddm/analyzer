@@ -15,3 +15,5 @@ int main() {
     
     return 0;
 }
+
+//This test case checks whether the addition of corresponding elements from two vectors results in the expected values in the 'result' vector.

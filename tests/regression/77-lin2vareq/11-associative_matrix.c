@@ -40,3 +40,5 @@ int main() {
 
     return 0;
 }
+
+//This test case check the associative property of matrix operations.
