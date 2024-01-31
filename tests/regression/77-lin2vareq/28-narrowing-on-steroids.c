@@ -1,4 +1,4 @@
-// SKIP PARAM: --set ana.activated[+] lin2vareq --enable ana.int.interval  --set sem.int.signed_overflow assume_none
+// SKIP PARAM: --set ana.activated[+] lin2vareq --enable ana.int.interval  --set sem.int.signed_overflow assume_top
 #include <assert.h>
 
 int main() {
@@ -14,18 +14,18 @@ int main() {
     a = 1;
   }
 
-  if (x > 50) { 
-    
+  if (x > 50) {
+
     for (int i = 0; i <= 0; i--) {
       c = 57;
 
       int y;
 
-      for (y = 0; y < x; y++) { 
+      for (y = 0; y < x; y++) {
         b = 42;
       }
     }
     assert(0); // NOWARN (unreachable)
   }
-  assert(b + 1 == c);// SUCCESS 
+  assert(b + 1 == c);// SUCCESS
 }

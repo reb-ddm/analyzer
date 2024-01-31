@@ -702,7 +702,7 @@ struct
           | `Bot -> eval_next () (* Base EvalInt returns bot on incorrect type (e.g. pthread_t); ignore and continue. *)
           (* | x -> Some (Int x) *)
           | `Lifted x -> Int x (* cast should be unnecessary, EvalInt should guarantee right ikind already *)
-          | `Top -> Int (ID.top_of (Cilfacade.get_ikind typ)) (* query cycle *)
+          | `Top -> (if M.tracing then M.trace "signed_overflow" "TOP";Int (ID.top_of (Cilfacade.get_ikind typ))) (* query cycle *)
         end
       | exception Cilfacade.TypeOfError _ (* Bug: typeOffset: Field on a non-compound *)
       | _ -> eval_next ()
@@ -1236,33 +1236,31 @@ struct
     match Cilfacade.get_ikind_exp exp with
     | exception _ -> BoolDomain.MayBool.top ()
     | ik ->
-      let exp_is_top = match eval_rv_ask_evalint ~ctx:ctx ctx.local exp with
-        | Int i ->Queries.ID.is_top_of ik (`Lifted i)
-        | _   -> true
-        | exception (IntDomain.ArithmeticOnIntegerBot _) -> true in
-      match exp with
-      | Const _
-      | SizeOf _
-      | SizeOfStr _
-      | AlignOf _
-      | AddrOfLabel _ -> false
-      | Real e
-      | Imag e
-      | SizeOfE e
-      | AlignOfE e
-      | CastE (_, e) -> exp_may_signed_overflow ctx e
-      | UnOp (_, e, _) ->
-        if Cil.isSigned ik && exp_is_top then true
-        (** if EvalInt returns top, there was probably an overflow.
-                Otherwise, to be sure that there is no overflow, we need to check each subexpression *)
-        else exp_may_signed_overflow ctx e
-      | BinOp (_, e1, e2, _) -> if Cil.isSigned ik && exp_is_top then true else
+      let exp_is_top = (Queries.ID.is_top_of ik ((Analyses.ask_of_ctx ctx).f (EvalInt exp))) in
+      (** if EvalInt returns top, there was probably an overflow.
+          Otherwise, to be sure that there is no overflow, we need to check each subexpression *)
+      if Cil.isSigned ik && exp_is_top then true
+      else
+        match exp with
+        | Const _
+        | SizeOf _
+        | SizeOfStr _
+        | AlignOf _
+        | AddrOfLabel _ -> false
+        | Real e
+        | Imag e
+        | SizeOfE e
+        | AlignOfE e
+        | CastE (_, e) -> exp_may_signed_overflow ctx e
+        | UnOp (_, e, _) ->
+          exp_may_signed_overflow ctx e
+        | BinOp (_, e1, e2, _) ->
           exp_may_signed_overflow ctx e1 || exp_may_signed_overflow ctx e2
-      | Question (e1, e2, e3, _) ->
-        exp_may_signed_overflow ctx e1 || exp_may_signed_overflow ctx e2 || exp_may_signed_overflow ctx e3
-      | Lval lval
-      | AddrOf lval
-      | StartOf lval -> lval_may_signed_overflow ctx lval
+        | Question (e1, e2, e3, _) ->
+          exp_may_signed_overflow ctx e1 || exp_may_signed_overflow ctx e2 || exp_may_signed_overflow ctx e3
+        | Lval lval
+        | AddrOf lval
+        | StartOf lval -> lval_may_signed_overflow ctx lval
   and lval_may_signed_overflow ctx (lval : lval) =
     let (host, offset) = lval in
     let host_may_signed_overflow = function
@@ -1442,7 +1440,7 @@ struct
       let g: V.t = Obj.obj g in
       query_invariant_global ctx g
     | Q.MaySignedOverflow e -> (let res = exp_may_signed_overflow ctx e in
-                                if M.tracing then M.traceli "signed_overflow" "base exp_may_signed_overflow %a. Result = %b\n" d_plainexp e res; res
+                                if M.tracing then M.trace "signed_overflow" "base exp_may_signed_overflow %a. Result = %b\n" d_exp e res; res
                                )
     | _ -> Q.Result.top q
 
