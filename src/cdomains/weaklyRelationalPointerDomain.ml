@@ -196,14 +196,14 @@ module D = struct
       while maintaining all equalities about variables that are not being removed.*)
   let remove_terms_containing_variable var cc =
     if M.tracing then M.trace "wrpointer" "remove_terms_containing_variable: %s\n" (T.show (Addr var));
-    Option.bind cc (remove_terms (fun t -> Var.equal (T.get_var t) var))
+    Option.map (remove_terms (fun cc t -> Var.equal (T.get_var t) var)) cc
 
   (** Remove terms from the data structure.
       It removes all terms which contain one of the "vars",
       while maintaining all equalities about variables that are not being removed.*)
   let remove_terms_containing_variables vars cc =
     if M.tracing then M.trace "wrpointer" "remove_terms_containing_variables: %s\n" (List.fold_left (fun s v -> s ^"; " ^v.vname) "" vars);
-    Option.bind cc (remove_terms (T.contains_variable vars))
+    Option.map (remove_terms (fun cc -> T.contains_variable vars)) cc
 
   (** Remove terms from the data structure.
       It removes all terms which do not contain one of the "vars",
@@ -211,19 +211,19 @@ module D = struct
       while maintaining all equalities about variables that are not being removed.*)
   let remove_terms_not_containing_variables vars cc =
     if M.tracing then M.trace "wrpointer" "remove_terms_not_containing_variables: %s\n" (List.fold_left (fun s v -> s ^"; " ^v.vname) "" vars);
-    Option.bind cc (remove_terms (fun t -> (not (T.get_var t).vglob) && not (T.contains_variable vars t)))
+    Option.map (remove_terms (fun cc t -> (not (T.get_var t).vglob) && not (T.contains_variable vars t))) cc
 
   (** Remove terms from the data structure.
       It removes all terms that may be changed after an assignment to "term".*)
   let remove_may_equal_terms ask s term cc =
     if M.tracing then M.trace "wrpointer" "remove_may_equal_terms: %s\n" (T.show term);
     let cc = snd (insert cc term) in
-    Option.bind cc (remove_terms (MayBeEqual.may_be_equal ask cc s term))
+    Option.map (remove_terms (fun cc t -> MayBeEqual.may_be_equal ask (Some cc) s term t)) cc
 
   (** Remove terms from the data structure.
       It removes all terms that may point to the same address as "tainted".*)
   let remove_tainted_terms ask address cc =
     if M.tracing then M.tracel "wrpointer-tainted" "remove_tainted_terms: %a\n" MayBeEqual.AD.pretty address;
-    Option.bind cc (fun cc -> remove_terms (MayBeEqual.may_point_to_one_of_these_adresses ask address cc) cc)
+    Option.map (remove_terms (fun cc t -> MayBeEqual.may_point_to_one_of_these_adresses ask address cc t)) cc
 
 end

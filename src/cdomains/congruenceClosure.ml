@@ -1088,6 +1088,22 @@ module CongruenceClosure = struct
     let map_set_mem v v' (map:t) = match TMap.find_opt v map with
       | None -> false
       | Some set -> TSet.mem v' set
+
+    let filter_if (map:t) p =
+      TMap.filter_map (fun _ t_set ->
+          let filtered_set = TSet.filter p t_set in
+          if TSet.is_empty filtered_set then None else Some filtered_set) map
+
+    let filter_map f (diseq:t) =
+      TMap.filter_map
+        (fun _ s -> let set = TSet.filter_map f s in
+          if TSet.is_empty set then None else Some set) diseq
+
+    let shift v r v' (map:t) =
+      match TMap.find_opt v' map with
+      | None -> map
+      | Some tset ->
+        TMap.remove v' (TMap.add v tset map)
   end
 
   (** Set of subterms which are present in the current data structure. *)
@@ -1718,7 +1734,7 @@ module CongruenceClosure = struct
     let rec remove_terms_recursive (new_set, removed_terms, map_of_children, cc) = function
       | [] -> (new_set, removed_terms, map_of_children, cc)
       | el::rest ->
-        let new_set, removed_terms = if predicate cc.uf el then new_set, el::removed_terms else SSet.add el new_set, removed_terms in
+        let new_set, removed_terms = if predicate cc el then new_set, el::removed_terms else SSet.add el new_set, removed_terms in
         let uf_parent = TUF.parent cc.uf el in
         let map_of_children = add_to_map_of_children el map_of_children (fst uf_parent) in
         (* in order to not lose information by removing some elements, we add dereferences values to the union find.*)
@@ -1742,8 +1758,8 @@ module CongruenceClosure = struct
       - `uf`: the updated union find tree
       - `new_parents_map`: maps each removed term t to another term which was in the same equivalence class as t at the time when t was deleted.
   *)
-  let remove_terms_from_uf uf removed_terms map_of_children predicate =
-    let find_not_removed_element set = match List.find (fun el -> not (predicate uf el)) set with
+  let remove_terms_from_uf cc removed_terms map_of_children predicate =
+    let find_not_removed_element set = match List.find (fun el -> not (predicate cc el)) set with
       | exception Not_found -> List.first set
       | t -> t
     in
@@ -1793,7 +1809,7 @@ module CongruenceClosure = struct
           let uf = TUF.modify_size new_root uf pred in
           (TUF.ValMap.remove t uf, LMap.add t (new_root, new_offset) new_parents_map, map_of_children)
     in
-    List.fold_left remove_term (uf, LMap.empty, map_of_children) removed_terms
+    List.fold_left remove_term (cc.uf, LMap.empty, map_of_children) removed_terms
 
   let show_new_parents_map new_parents_map = List.fold_left
       (fun s (v1, (v2, o2)) ->
@@ -1835,6 +1851,23 @@ module CongruenceClosure = struct
     let res, uf = remove_terms_from_map (uf, diseq) removed_terms new_parents_map in
     if M.tracing then M.trace "wrpointer-neq" "remove_terms_from_diseq: %s\nUnion find: %s\n" (Disequalities.show_neq res) (TUF.show_uf uf); res, uf
 
+  let remove_terms_from_bldis (diseq: BlDis.t) removed_terms predicate new_parents_map uf =
+    (* modify mapped values
+       -> change terms to their new representatives or remove them, if the representative class was completely removed. *)
+    let diseq = BlDis.filter_map (Option.map Tuple3.first % find_new_root new_parents_map uf) (BlDis.filter_if diseq (not % predicate))  in
+    (* modify left hand side of map *)
+    let remove_terms_from_bldis (uf, map) removed_terms new_parents_map =
+      let remove_from_map (map, uf) term =
+        match LMap.find_opt term map with
+        | None -> map, uf
+        | Some _ -> (* move this entry in the map to the new representative of the equivalence class where term was before. If it still exists. *)
+          match find_new_root new_parents_map uf term with
+          | None -> LMap.remove term map, uf
+          | Some (new_root, new_offset, uf) -> BlDis.shift new_root new_offset term map, uf
+      in List.fold_left remove_from_map (map, uf) removed_terms in
+    let res, uf = remove_terms_from_bldis (uf, diseq) removed_terms new_parents_map in
+    if M.tracing then M.trace "wrpointer-neq" "remove_terms_from_diseq: %s\nUnion find: %s\n" (show_conj(BlDis.to_conj res)) (TUF.show_uf uf); res, uf
+
   (** Remove terms from the data structure.
       It removes all terms for which "predicate" is false,
       while maintaining all equalities about variables that are not being removed.*)
@@ -1846,13 +1879,14 @@ module CongruenceClosure = struct
     in if M.tracing then M.trace "wrpointer" "REMOVE TERMS: %s\n BEFORE: %s\n" (List.fold_left (fun s t -> s ^ "; " ^ T.show t) "" removed_terms)
         (show_all old_cc);
     let uf, new_parents_map, _ =
-      remove_terms_from_uf cc.uf removed_terms map_of_children predicate
+      remove_terms_from_uf cc removed_terms map_of_children predicate
     in let map =
-         remove_terms_from_mapped_values cc.map (predicate cc.uf)
+         remove_terms_from_mapped_values cc.map (predicate cc)
     in let map, uf =
          remove_terms_from_map (uf, map) removed_terms new_parents_map
     in let diseq, uf =
-         remove_terms_from_diseq cc.diseq removed_terms (predicate cc.uf) new_parents_map uf
+         remove_terms_from_diseq cc.diseq removed_terms (predicate cc) new_parents_map uf
+    in let bldis, uf = remove_terms_from_bldis cc.bldis removed_terms (predicate cc) new_parents_map uf
     in let min_repr, uf = MRMap.compute_minimal_representatives (uf, set, map)
     in if M.tracing then M.trace "wrpointer" "REMOVE TERMS: %s\n BEFORE: %s\nRESULT: %s\n" (List.fold_left (fun s t -> s ^ "; " ^ T.show t) "" removed_terms)
         (show_all old_cc) (show_all {uf; set; map; min_repr; diseq; bldis});
